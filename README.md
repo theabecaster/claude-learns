@@ -33,8 +33,10 @@ claude --plugin-dir ~/claude-learns
 
 - Claude Code 1.0.33+
 - Node.js 18+ (already installed with Claude Code)
-
-No extra installs needed.
+- `tsx` (TypeScript runner):
+  ```bash
+  npm install -g tsx
+  ```
 
 ---
 

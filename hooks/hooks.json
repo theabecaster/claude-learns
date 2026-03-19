@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/detect-correction.ts"
+            "command": "tsx ${CLAUDE_PLUGIN_ROOT}/hooks/detect-correction.ts"
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/session-count.ts"
+            "command": "tsx ${CLAUDE_PLUGIN_ROOT}/hooks/session-count.ts"
           }
         ]
       }
@@ -26,7 +26,7 @@
           {
             "type": "command",
             "async": true,
-            "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/audit.ts"
+            "command": "tsx ${CLAUDE_PLUGIN_ROOT}/hooks/audit.ts"
           }
         ]
       }
