@@ -2,6 +2,9 @@
   "name": "claude-learns",
   "version": "0.1.0",
   "description": "Claude Code remembers your corrections and preferences. Auto-captures rules from your prompts, writes them to CLAUDE.md, and audits for conflicts and expiry.",
-  "author": "theabecaster",
+  "author": {
+    "name": "theabecaster",
+    "url": "https://github.com/theabecaster"
+  },
   "license": "MIT"
 }
