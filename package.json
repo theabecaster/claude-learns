@@ -1,0 +1,11 @@
+{
+  "name": "claude-learns",
+  "version": "0.1.0",
+  "description": "Claude Code plugin that learns from your corrections",
+  "type": "module",
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,20 +1,7 @@
 {
   "hooks": [
-    {
-      "event": "UserPromptSubmit",
-      "type": "command",
-      "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/detect-correction.py"
-    },
-    {
-      "event": "SessionStart",
-      "type": "command",
-      "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-count.sh"
-    },
-    {
-      "event": "SessionEnd",
-      "type": "command",
-      "async": true,
-      "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/audit.py"
-    }
+    {"event": "UserPromptSubmit", "type": "command", "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/detect-correction.ts"},
+    {"event": "SessionStart", "type": "command", "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/session-count.ts"},
+    {"event": "SessionEnd", "type": "command", "async": true, "command": "npx --yes tsx ${CLAUDE_PLUGIN_ROOT}/hooks/audit.ts"}
   ]
 }

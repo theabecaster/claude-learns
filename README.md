@@ -32,9 +32,9 @@ claude --plugin-dir ~/claude-learns
 ## Requirements
 
 - Claude Code 1.0.33+
-- Python 3.10+
+- Node.js 18+ (already installed with Claude Code)
 
-That's it. The plugin uses the `claude` CLI (which you already have) for AI-powered rule extraction and conflict resolution — no extra packages, no API keys to configure separately.
+No extra installs needed.
 
 ---
 
@@ -109,11 +109,11 @@ Once the plugin is loaded, these slash commands are available inside Claude Code
 
 Three hooks run automatically throughout your session:
 
-1. **`UserPromptSubmit`** — `detect-correction.py` scans every prompt with a regex for correction signals. On a match, it calls `claude-haiku-4-5` to extract a clean rule (falls back to trimmed raw prompt if the API is unavailable), deduplicates against existing rules, and appends to `CLAUDE.md`.
+1. **`UserPromptSubmit`** — `detect-correction.ts` scans every prompt with a regex for correction signals. On a match, it calls `claude-haiku-4-5` to extract a clean rule (falls back to trimmed raw prompt if the API is unavailable), deduplicates against existing rules, and appends to `CLAUDE.md`.
 
-2. **`SessionStart`** — `session-count.sh` counts active rules and prints a brief summary so you know your preferences are loaded.
+2. **`SessionStart`** — `session-count.ts` counts active rules and prints a brief summary so you know your preferences are loaded.
 
-3. **`SessionEnd`** — `audit.py` runs async. It expires rules older than `ttlDays`, removes near-exact duplicates, calls the API once to find and resolve semantic conflicts, trims to `maxRules`, and updates the `Last audited` comment in `CLAUDE.md`.
+3. **`SessionEnd`** — `audit.ts` runs async. It expires rules older than `ttlDays`, removes near-exact duplicates, calls the API once to find and resolve semantic conflicts, trims to `maxRules`, and updates the `Last audited` comment in `CLAUDE.md`.
 
 All scripts exit 0 and handle errors gracefully — API failures, missing files, and bad input never crash your session.
 
