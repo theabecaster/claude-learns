@@ -8,21 +8,10 @@ and appends it to CLAUDE.md under "## Learned Preferences".
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 from datetime import date
-
-# ---------------------------------------------------------------------------
-# Try to import anthropic; fall back gracefully if not installed
-# ---------------------------------------------------------------------------
-try:
-    import anthropic as _anthropic
-    ANTHROPIC_AVAILABLE = True
-except ImportError:
-    ANTHROPIC_AVAILABLE = False
-    print(
-        "💡 claude-learns: Run `pip install anthropic` to enable AI-powered rule extraction.",
-        file=sys.stderr,
-    )
 
 # ---------------------------------------------------------------------------
 # Correction signal patterns
@@ -68,30 +57,26 @@ def load_config() -> dict:
     return defaults
 
 
-def extract_rule_via_api(prompt: str) -> str | None:
-    """Call Anthropic API to extract a clean rule. Returns None on failure."""
-    if not ANTHROPIC_AVAILABLE:
+def extract_rule_via_cli(prompt: str) -> str | None:
+    """Use the claude CLI to extract a clean rule. Returns None on failure."""
+    if not shutil.which("claude"):
         return None
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        return None
+    system = (
+        "You extract a single, clean, terse coding preference rule from user messages. "
+        "Output ONLY the rule itself — no explanation, no quotes, no punctuation at the end. "
+        "Maximum 15 words. Start with an action verb or noun."
+    )
     try:
-        client = _anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=60,
-            system=(
-                "You extract a single, clean, terse coding preference rule from user messages. "
-                "Output ONLY the rule itself — no explanation, no quotes, no punctuation at the end. "
-                "Maximum 15 words. Start with an action verb or noun."
-            ),
-            messages=[{"role": "user", "content": prompt}],
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--system-prompt", system, "--model", "claude-haiku-4-5"],
+            capture_output=True,
+            text=True,
+            timeout=15,
         )
-        for block in response.content:
-            if block.type == "text":
-                rule = block.text.strip().strip('"\'')
-                if rule:
-                    return rule
+        if result.returncode == 0:
+            rule = result.stdout.strip().strip('"\'')
+            if rule:
+                return rule
     except Exception:
         pass
     return None
@@ -203,7 +188,7 @@ def main() -> None:
         sys.exit(0)
 
     # Extract rule
-    rule = extract_rule_via_api(prompt)
+    rule = extract_rule_via_cli(prompt)
     if not rule:
         # Fallback: trim raw prompt
         rule = prompt.strip()[:100]

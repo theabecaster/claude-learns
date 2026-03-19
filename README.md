@@ -33,13 +33,8 @@ claude --plugin-dir ~/claude-learns
 
 - Claude Code 1.0.33+
 - Python 3.10+
-- `anthropic` Python package (for AI-powered rule extraction):
-  ```bash
-  pip install anthropic
-  ```
-- `ANTHROPIC_API_KEY` environment variable set
 
-> If `anthropic` is not installed, the plugin still works — it falls back to regex-only rule capture without API-powered extraction or conflict resolution.
+That's it. The plugin uses the `claude` CLI (which you already have) for AI-powered rule extraction and conflict resolution — no extra packages, no API keys to configure separately.
 
 ---
 

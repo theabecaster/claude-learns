@@ -8,17 +8,12 @@ and updates the ## Learned Preferences section in CLAUDE.md.
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 from datetime import date, datetime
 
-# ---------------------------------------------------------------------------
-# Try to import anthropic; fall back gracefully if not installed
-# ---------------------------------------------------------------------------
-try:
-    import anthropic as _anthropic
-    ANTHROPIC_AVAILABLE = True
-except ImportError:
-    ANTHROPIC_AVAILABLE = False
+CLAUDE_CLI_AVAILABLE = bool(shutil.which("claude"))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -157,16 +152,12 @@ def dedup_rules(rules: list[dict]) -> tuple[list[dict], int]:
     return deduped, removed
 
 
-def resolve_conflicts_via_api(rules: list[dict]) -> tuple[list[dict], int]:
+def resolve_conflicts_via_cli(rules: list[dict]) -> tuple[list[dict], int]:
     """
-    Call Anthropic API to find conflicting rules and keep the newer ones.
+    Use the claude CLI to find conflicting rules and keep the newer ones.
     Returns (kept_rules, conflict_pairs_resolved).
     """
-    if not ANTHROPIC_AVAILABLE or len(rules) < 2:
-        return rules, 0
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
+    if not CLAUDE_CLI_AVAILABLE or len(rules) < 2:
         return rules, 0
 
     rules_text = "\n".join(f"{i}: {r['text']}" for i, r in enumerate(rules))
@@ -179,23 +170,21 @@ def resolve_conflicts_via_api(rules: list[dict]) -> tuple[list[dict], int]:
     )
 
     try:
-        client = _anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=256,
-            messages=[{"role": "user", "content": prompt}],
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--model", "claude-haiku-4-5"],
+            capture_output=True,
+            text=True,
+            timeout=20,
         )
-        for block in response.content:
-            if block.type == "text":
-                text = block.text.strip()
-                # Extract JSON from response
-                json_match = re.search(r"\{.*\}", text, re.DOTALL)
-                if json_match:
-                    data = json.loads(json_match.group())
-                    to_remove = set(data.get("remove", []))
-                    if to_remove:
-                        kept = [r for i, r in enumerate(rules) if i not in to_remove]
-                        return kept, len(to_remove)
+        if result.returncode == 0:
+            text = result.stdout.strip()
+            json_match = re.search(r"\{.*\}", text, re.DOTALL)
+            if json_match:
+                data = json.loads(json_match.group())
+                to_remove = set(data.get("remove", []))
+                if to_remove:
+                    kept = [r for i, r in enumerate(rules) if i not in to_remove]
+                    return kept, len(to_remove)
     except Exception:
         pass
 
@@ -235,8 +224,8 @@ def main() -> None:
     # Step 2: Deduplicate
     rules, dedup_count = dedup_rules(rules)
 
-    # Step 3: Resolve conflicts via API
-    rules, conflict_count = resolve_conflicts_via_api(rules)
+    # Step 3: Resolve conflicts via CLI
+    rules, conflict_count = resolve_conflicts_via_cli(rules)
 
     # Step 4: Trim to maxRules (keep most recent)
     if len(rules) > max_rules:
